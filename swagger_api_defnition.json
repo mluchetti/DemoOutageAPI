@@ -1,0 +1,318 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "description": "This is a sample server.  This API definition was built using Swagger Editor at [https://editor.swagger.io/](https://editor.swagger.io/). \nFor this sample, you can use the api key `special-key` to test the authorization filters.",
+    "version": "1.0.0",
+    "title": "Outage Demo",
+    "contact": {
+      "email": "outagedevteam@ameren.com"
+    },
+    "license": {
+      "name": "Apache 2.0",
+      "url": "http://www.apache.org/licenses/LICENSE-2.0.html"
+    }
+  },
+  "host": "aws.ameren.com",
+  "basePath": "/outage/v1",
+  "tags": [
+    {
+      "name": "alerts",
+      "description": "Potential Power Outage Alerts",
+      "externalDocs": {
+        "description": "Find out more",
+        "url": "http://outagemap.ameren.com"
+      }
+    },
+    {
+      "name": "outage",
+      "description": "Customer initiated Outage Messages",
+      "externalDocs": {
+        "description": "Find out more",
+        "url": "http://outagemap.ameren.com"
+      }
+    }
+  ],
+  "schemes": [
+    "https"
+  ],
+  "paths": {
+    "/out/{account}": {
+      "post": {
+        "tags": [
+          "outage"
+        ],
+        "summary": "Process a new request to report outage from a customer",
+        "description": "",
+        "operationId": "outReq",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "account",
+            "in": "path",
+            "type": "integer",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/OutageStatus"
+            }
+          }
+        },
+        "security": [
+          {
+            "alerts_auth": [
+              "write:alerts"
+            ]
+          }
+        ]
+      }
+    },
+    "/stat/{account}": {
+      "get": {
+        "tags": [
+          "outage"
+        ],
+        "summary": "Process a new request for outage status from a customer",
+        "description": "",
+        "operationId": "statReq",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "account",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/OutageStatus"
+            }
+          }
+        },
+        "security": [
+          {
+            "alerts_auth": [
+              "read:alerts"
+            ]
+          }
+        ]
+      }
+    },
+    "/alerts/response": {
+      "post": {
+        "tags": [
+          "alerts"
+        ],
+        "summary": "Add a new response from a customer",
+        "description": "",
+        "operationId": "addResp",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "description": "Response object that needs to be recorded",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/AlertCustResponse"
+            }
+          }
+        ],
+        "responses": {
+          "405": {
+            "description": "Invalid input"
+          }
+        },
+        "security": [
+          {
+            "alerts_auth": [
+              "write:alerts"
+            ]
+          }
+        ]
+      }
+    }
+  },
+  "securityDefinitions": {
+    "alerts_auth": {
+      "type": "oauth2",
+      "authorizationUrl": "http://petstore.swagger.io/oauth/dialog",
+      "flow": "implicit",
+      "scopes": {
+        "write:alerts": "post responses to alerts",
+        "read:alerts": "read alerts"
+      }
+    },
+    "api_key": {
+      "type": "apiKey",
+      "name": "api_key",
+      "in": "header"
+    }
+  },
+  "definitions": {
+    "OutageStatus": {
+      "title": "Status of a customer outage",
+      "description": "",
+      "properties": {
+        "isPowerOn": {
+          "type": "boolean"
+        },
+        "account": {
+          "$ref": "#/definitions/BillAccount"
+        },
+        "state": {
+          "type": "string",
+          "enum": [
+            "IL",
+            "MO"
+          ]
+        },
+        "postalCode": {
+          "type": "string"
+        },
+        "houseNumber": {
+          "type": "string"
+        },
+        "outageDateTime": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "esrt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "affectedNumberOfCustomers": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "restoredDateTime": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "reportedNotProcessed": {
+          "type": "boolean"
+        },
+        "lastUpdatedDateTime": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "reportAlert": {
+          "type": "boolean"
+        }
+      }
+    },
+    "BillAccount": {
+      "title": "Bill Account Number of customer responding",
+      "type": "string",
+      "minLength": 10,
+      "maxLength": 10,
+      "example": "0100500104"
+    },
+    "ContactPreference": {
+      "type": "object",
+      "properties": {
+        "sms": {
+          "title": "mobile number of customer responding",
+          "type": "integer",
+          "format": "int64",
+          "minLength": 11,
+          "maxLength": 11,
+          "example": 13145551234
+        },
+        "email": {
+          "title": "email address of customer responding",
+          "type": "string",
+          "format": "email",
+          "example": "someone@me.com"
+        }
+      },
+      "xml": {
+        "name": "ContactPreference"
+      }
+    },
+    "AlertCustResponse": {
+      "type": "object",
+      "required": [
+        "account",
+        "contact",
+        "replyValue",
+        "replyDate"
+      ],
+      "properties": {
+        "account": {
+          "$ref": "#/definitions/BillAccount"
+        },
+        "contact": {
+          "$ref": "#/definitions/ContactPreference"
+        },
+        "replyValue": {
+          "title": "Response from customer",
+          "type": "integer",
+          "format": "int32",
+          "enum": [
+            1,
+            2,
+            3
+          ],
+          "description": "1 [Power On] \n2 [Power Off] \n3 [Unable to Confirm]"
+        },
+        "replyText": {
+          "title": "Response Text from customer",
+          "type": "string",
+          "enum": [
+            "[1] Power On",
+            "[2] Power Off",
+            "[3] Unable to Confirm"
+          ]
+        },
+        "replyDate": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "xml": {
+        "name": "AlertCustResponse"
+      }
+    },
+    "ApiResponse": {
+      "type": "object",
+      "properties": {
+        "code": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "type": {
+          "type": "string"
+        },
+        "message": {
+          "type": "string"
+        }
+      }
+    }
+  },
+  "externalDocs": {
+    "description": "Find out more about Swagger",
+    "url": "http://swagger.io"
+  }
+}
