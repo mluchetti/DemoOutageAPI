@@ -1,0 +1,248 @@
+swagger: "2.0"
+info:
+  description: "This is a sample server.  This API definition was built using Swagger Editor at [https://editor.swagger.io/](https://editor.swagger.io/). \nFor this sample, you can use the api key `special-key` to test the authorization filters."
+  version: "1.0.0"
+  title: "Outage Demo"
+#  termsOfService: "http://swagger.io/terms/"
+  contact:
+    email: "outagedevteam@ameren.com"
+  license:
+    name: "Apache 2.0"
+    url: "http://www.apache.org/licenses/LICENSE-2.0.html"
+host: "aws.ameren.com"
+basePath: "/outage/v1"
+
+tags:
+- name: "alerts"
+  description: "Potential Power Outage Alerts"
+  externalDocs:
+    description: "Find out more"
+    url: "http://outagemap.ameren.com"
+- name: "outage"
+  description: "Customer initiated Outage Messages"
+  externalDocs:
+    description: "Find out more"
+    url: "http://outagemap.ameren.com"
+schemes:
+- "https"
+
+paths:
+  /out:
+    post:
+      tags:
+      - "outage"
+      summary: "Process a new request to report outage from a customer"
+      description: ""
+      operationId: "outReq"
+      consumes:
+      - "application/json"
+      - "application/xml"
+      produces:
+      - "application/json"
+      parameters:
+      - in: "body"
+        name: "body"
+        description: "Request object that needs to be recorded"
+        required: true
+        schema:
+          $ref: "#/definitions/CustOutRequest"
+      responses:
+        200:
+          description: "OK"
+          schema:
+            $ref: "#/definitions/OutageStatus"
+      security:
+      - alerts_auth:
+        - "write:alerts"
+
+  /stat/{account}:
+    get:
+      tags:
+      - "outage"
+      summary: "Process a new request for outage status from a customer"
+      description: ""
+      operationId: "statReq"
+      consumes:
+      - "application/json"
+      produces:
+      - "application/json"
+      parameters:
+      - in: "path"
+        name: "account"
+        required: true
+        type: string
+#        schema: 
+#          $ref: "#/definitions/BillAccount"
+      responses:
+        200:
+          description: "OK"
+          schema:
+            $ref: "#/definitions/OutageStatus"
+      security:
+      - alerts_auth:
+        - "read:alerts"
+
+  /alerts/response:
+    post:
+      tags:
+      - "alerts"
+      summary: "Add a new response from a customer"
+      description: ""
+      operationId: "addResp"
+      consumes:
+      - "application/json"
+      produces:
+      - "application/json"
+      parameters:
+      - in: "body"
+        name: "body"
+        description: "Response object that needs to be recorded"
+        required: true
+        schema:
+          $ref: "#/definitions/AlertCustResponse"
+      responses:
+        405:
+          description: "Invalid input"
+      security:
+      - alerts_auth:
+        - "write:alerts"
+
+securityDefinitions:
+  alerts_auth:
+    type: "oauth2"
+    authorizationUrl: "http://petstore.swagger.io/oauth/dialog"
+    flow: "implicit"
+    scopes:
+      write:alerts: "post responses to alerts"
+      read:alerts: "read alerts"
+  api_key:
+    type: "apiKey"
+    name: "api_key"
+    in: "header"
+    
+definitions:
+  OutageStatus:
+    title: "Status of a customer outage"
+    description: ""
+    properties:
+      isPowerOn:
+        type: boolean
+      account:
+        $ref: "#/definitions/BillAccount"
+      state: 
+        type: string
+        enum: ["IL","MO"]
+      postalCode:
+        type: string
+      houseNumber:
+        type: string
+      outageDateTime:
+        type: string
+        format: date-time
+      esrt:
+        title: Estimated Safe Restoration Time
+        type: string
+        format: date-time
+      customersImpacted:
+        title: Number of customers affected by outage
+        type: integer
+        format: int32
+      restoredDateTime:
+        type: string
+        format: date-time
+      reportedNotProcessed:
+        title: outage report received, but not sent to OMS
+        type: boolean
+      lastUpdatedDateTime:
+        type: string
+        format: date-time
+      reportAlert:
+        title: ??
+        type: boolean
+      reported:
+        title: Has this customer alread reported
+        type: boolean
+
+  BillAccount:
+    title: "Bill Account Number of customer responding"
+    type: "string"
+    minLength: 10
+    maxLength: 10
+    example: "0100500104"
+  
+  ContactPreference:
+    type: "object"
+    properties:
+      sms:
+        title: "mobile number of customer responding"
+        type: "integer"
+        format: "int64"
+        minLength: 11
+        maxLength: 11
+        example: 13145551234
+      email:
+        title: "email address of customer responding"
+        type: "string"
+        format: "email"
+        example: "someone@me.com"
+    xml:
+      name: "ContactPreference"
+
+  CustOutRequest:
+    type: "object"
+    required: 
+      - "account"
+      - "contact"
+      - "requestDate"
+    properties: 
+      account:
+        $ref: "#/definitions/BillAccount"
+      contact:
+        $ref: "#/definitions/ContactPreference"
+      requestDate:
+        type: "string"
+        format: "date-time"
+    xml:
+      name: "AlertCustRequest"
+      
+  AlertCustResponse:
+    type: "object"
+    required: 
+      - "account"
+      - "contact"
+      - "replyValue"
+      - "source"
+      - "replyDate"
+    properties: 
+      account:
+        $ref: "#/definitions/BillAccount"
+      contact:
+        $ref: "#/definitions/ContactPreference"
+      replyValue:
+        title: "Response from customer"
+        type: "integer"
+        format: "int32"
+        enum: 
+          - 1
+          - 2
+          - 3
+        description: "1 [Power On] \n2 [Power Off] \n3 [Unable to Confirm]"
+        example: 2
+      replyText:
+        title: "Response Text from customer"
+        type: "string"
+        enum: 
+          - "ON"
+          - "OFF"
+          - "UNK"
+        example: "OFF"
+      source:
+        title: "Response from customer's PPO Alert or Restored Alert"
+        type: "string"
+        enum: ["PPO", "RVA"]
+        example: "PPO"
+      replyDate:
+        type: "string"
+        format: "date-time"
+    xml:
+      name: "AlertCustResponse"
