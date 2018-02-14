@@ -206,22 +206,6 @@ definitions:
           - "[1] Power On"
           - "[2] Power Off"
           - "[3] Unable to Confirm"
-      replyDate:
-        type: "string"
-        format: "date-time"
+
     xml:
       name: "AlertCustResponse"
-
-  ApiResponse:
-    type: "object"
-    properties:
-      code:
-        type: "integer"
-        format: "int32"
-      type:
-        type: "string"
-      message:
-        type: "string"
-externalDocs:
-  description: "Find out more about Swagger"
-  url: "http://swagger.io"
