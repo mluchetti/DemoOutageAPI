@@ -47,12 +47,12 @@
 				            <useBeanValidation>true</useBeanValidation>
 				            <dateLibrary>java8</dateLibrary>
 				        </configOptions>    
-<!-- 				        <typeMappings>       -->
+				        <typeMappings>      
 <!-- 				            <typeMapping>OffsetDateTime=ZonedDateTime</typeMapping> -->
-<!-- 				        </typeMappings>      -->
-<!-- 				        <importMappings>     -->
+				        </typeMappings>     
+				        <importMappings>    
 <!-- 				            <importMapping>java.time.OffsetDateTime=java.time.ZonedDateTime</importMapping> -->
-<!-- 				        </importMappings>    -->
+				        </importMappings>   
 		                <inputSpec>src/main/resources/swagger-api.yaml</inputSpec>
 		                <language>spring</language>
 						<output>gen</output>

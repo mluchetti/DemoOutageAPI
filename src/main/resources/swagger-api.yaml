@@ -111,7 +111,7 @@ paths:
       - "alerts"
       summary: "Add a new response from a customer"
       description: ""
-      operationId: "addAlertResponse"
+      operationId: "addAlertResponseGet"
       produces:
       - "application/json"
       parameters:
@@ -129,10 +129,8 @@ paths:
         name: "status"
         description: "Power Status"
         required: true
-        type: "integer"
-        format: "int32"
+        type: integer
         enum: [1,2,3]
-        example: 2
 
       responses:
         405:
@@ -256,19 +254,13 @@ definitions:
         title: "Response from customer"
         type: "integer"
         format: "int32"
-        enum: 
-          - 1
-          - 2
-          - 3
+        enum: [1,2,3]
         description: "1 [Power On] \n2 [Power Off] \n3 [Unable to Confirm]"
         example: 2
       replyText:
         title: "Response Text from customer"
         type: "string"
-        enum: 
-          - "ON"
-          - "OFF"
-          - "UNK"
+        enum: ["ON","OFF","UNK"]
         example: "OFF"
       source:
         title: "Response from customer's PPO Alert or Restored Alert"
